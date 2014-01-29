@@ -13,36 +13,35 @@ namespace Climie3.model
         // Migemo正規表現クラス
         private Migemo migemo;
 
-        // インスタンス保持変数
-        private static RegexManagerModel regexManager;
+        //// インスタンス保持変数
+        //private static RegexManagerModel regexManager;
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        private RegexManagerModel(bool useMigemo)
+        public RegexManagerModel()
         {
             // Migemo使用時はMigemoオブジェクト生成
-            if (useMigemo &&
-                File.Exists("migemo.dll") &&
+            if (File.Exists("migemo.dll") &&
                 File.Exists("dict/migemo-dict"))
             {
                 migemo = new Migemo("dict/migemo-dict");
             }
         }
 
-        /// <summary>
-        /// インスタンス取得用メソッド
-        /// </summary>
-        /// <returns></returns>
-        public static RegexManagerModel GetInstance(bool useMigemo)
-        {
-            if (regexManager == null)
-            {
-                regexManager = new RegexManagerModel(useMigemo);
-            }
+        ///// <summary>
+        ///// インスタンス取得用メソッド
+        ///// </summary>
+        ///// <returns></returns>
+        //public static RegexManagerModel GetInstance()
+        //{
+        //    if (regexManager == null)
+        //    {
+        //        regexManager = new RegexManagerModel();
+        //    }
 
-            return regexManager;
-        }
+        //    return regexManager;
+        //}
 
         /// <summary>
         /// 
@@ -51,7 +50,9 @@ namespace Climie3.model
         /// <returns></returns>
         public Regex GetRegex(string pattern)
         {
-            if (migemo != null)
+            if (migemo != null && 
+                pattern.StartsWith("/") && 
+                !pattern.EndsWith("/"))
             {
                 return migemo.GetRegex(pattern);
             }
