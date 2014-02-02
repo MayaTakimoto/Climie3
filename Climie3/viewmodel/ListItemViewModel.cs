@@ -20,7 +20,7 @@ namespace Climie3.viewmodel
 
         // タグ
         [ProtoMember(3)]
-        private Dictionary<string, string> tags;
+        private List<string> tags;
 
         // 選択状態フラグプロパティ
         public bool IsSelected
@@ -50,7 +50,7 @@ namespace Climie3.viewmodel
         }
 
         // タグプロパティ
-        public Dictionary<string, string> Tags
+        public List<string> Tags
         {
             get
             {
@@ -67,7 +67,7 @@ namespace Climie3.viewmodel
         /// </summary>
         public ListItemViewModel()
         {
-            Tags = new Dictionary<string, string>();
+            Tags = new List<string>();
         }
     }
 }

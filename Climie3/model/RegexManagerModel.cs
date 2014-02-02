@@ -8,13 +8,13 @@ using System.Text.RegularExpressions;
 
 namespace Climie3.model
 {
+    /// <summary>
+    /// 検索用正規表現パターン生成
+    /// </summary>
     public class RegexManagerModel : IDisposable
     {
         // Migemo正規表現クラス
         private Migemo migemo;
-
-        //// インスタンス保持変数
-        //private static RegexManagerModel regexManager;
 
         /// <summary>
         /// コンストラクタ
@@ -29,41 +29,34 @@ namespace Climie3.model
             }
         }
 
-        ///// <summary>
-        ///// インスタンス取得用メソッド
-        ///// </summary>
-        ///// <returns></returns>
-        //public static RegexManagerModel GetInstance()
-        //{
-        //    if (regexManager == null)
-        //    {
-        //        regexManager = new RegexManagerModel();
-        //    }
-
-        //    return regexManager;
-        //}
-
         /// <summary>
-        /// 
+        /// 入力値に応じた正規表現パターンを生成する
         /// </summary>
-        /// <param name="pattern"></param>
-        /// <returns></returns>
+        /// <param name="pattern">入力値</param>
+        /// <returns>正規表現パターン</returns>
         public Regex GetRegex(string pattern)
         {
-            if (migemo != null && 
-                pattern.StartsWith("/") && 
-                !pattern.EndsWith("/"))
+            try
             {
-                return migemo.GetRegex(pattern);
+                if (migemo != null &&
+                    pattern.StartsWith("/") &&
+                    !pattern.EndsWith("/"))
+                {
+                    return migemo.GetRegex(pattern);
+                }
+                else
+                {
+                    return new Regex(pattern);
+                }
             }
-            else
+            catch
             {
-                return new Regex(pattern);
+                return null;
             }
         }
 
         /// <summary>
-        /// 
+        /// Migemoオブジェクトのリリース
         /// </summary>
         public void Dispose()
         {
