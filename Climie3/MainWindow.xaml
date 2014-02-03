@@ -21,13 +21,8 @@
                 <GradientStop Color="#FFF5F5F4" Offset="1"/>
             </LinearGradientBrush>
         </Grid.Background>
-        <ToolBarTray x:Name="ToolBarTray" VerticalAlignment="Top" Height="37" HorizontalAlignment="Left">
-            <ToolBar x:Name="ToolBarMain" Margin="0,0,-372,-30" Height="33" VerticalAlignment="Top" HorizontalAlignment="Left">
-                
-            </ToolBar>
-        </ToolBarTray>
         <ListBox x:Name="ListDsp" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch" FontSize="14" Margin="0,37,0,20"
-                 ScrollViewer.CanContentScroll="True" FontFamily="Meiryo" DataContext="{DynamicResource MVM}" ItemsSource="{Binding Path=ListDsp}" >
+                 ScrollViewer.CanContentScroll="True" FontFamily="Meiryo" DataContext="{DynamicResource MVM}" ItemsSource="{Binding Path=ListDsp}" Grid.ColumnSpan="2" >
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Path=Text}" ToolTip="{Binding Path=Text}" IsHitTestVisible="True" />
@@ -35,7 +30,7 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <StatusBar x:Name="StatusBarMain" Height="20" VerticalAlignment="Bottom" 
-                   FontFamily="Meiryo" FontSize="12" DataContext="{DynamicResource MVM}" >
+                   FontFamily="Meiryo" FontSize="12" DataContext="{DynamicResource MVM}" Grid.ColumnSpan="2" >
             <StatusBar.Background>
                 <LinearGradientBrush EndPoint="688,0" StartPoint="0,0" MappingMode="Absolute">
                     <GradientStop Color="#FFD4D0C8" Offset="0"/>
@@ -44,10 +39,12 @@
             </StatusBar.Background>
             <StatusBarItem Content="{Binding Path=ListCount}" />
         </StatusBar>
-        <TextBox x:Name="SerachBox" Margin="397,10,0,0" VerticalAlignment="Top" FontFamily="Meiryo" FontSize="11" >
+        <ComboBox x:Name="CmbSearch" VerticalAlignment="Top" Margin="458,10,0,0" HorizontalAlignment="Left" DataContext="{DynamicResource MVM}" SelectedIndex="0"
+                  Width="59" FontFamily="Meiryo" Height="22" FontSize="11" ItemsSource="{Binding Path=SearchModeList}" SelectedItem="{Binding Mode=OneWayToSource, Path=SearchMode}" FontWeight="Bold" />
+        <TextBox x:Name="SerachBox" VerticalAlignment="Top" FontFamily="Meiryo" FontSize="11" Margin="313,10,0,0" HorizontalAlignment="Left" Width="140" >
             <iav:Interaction.Triggers>
                 <iav:EventTrigger EventName="TextChanged">
-                    <lv:LivetCallMethodAction MethodTarget="{DynamicResource MVM}" MethodName="Search" MethodParameter="{Binding ElementName=SerachBox, Path=Text}" />
+                    <lv:LivetCallMethodAction MethodTarget="{DynamicResource MVM}" MethodName="Search" MethodParameter="{Binding Text, ElementName=SerachBox}" />
                 </iav:EventTrigger>
                 <iav:EventTrigger EventName="GotFocus">
                     <lv:LivetCallMethodAction MethodTarget="{DynamicResource MVM}" MethodName="InitSearch" />
@@ -57,6 +54,9 @@
                 </iav:EventTrigger>
             </iav:Interaction.Triggers>
         </TextBox>
+        <ToolBarPanel HorizontalAlignment="Left" Height="37" VerticalAlignment="Top" Width="308" Grid.ColumnSpan="2">
+            <ToolBar HorizontalAlignment="Left" Width="308" Height="35"/>
+        </ToolBarPanel>
     </Grid>
 
 </Window>

@@ -36,6 +36,9 @@ namespace Climie3.viewmodel
 
         // 履歴件数
         private string listCount;
+        
+        // 検索モード
+        private string[] searchModeList;
 
         // クリップボード監視オブジェクト
         private ClipboradWatcherModel cWatch;
@@ -97,6 +100,27 @@ namespace Climie3.viewmodel
                 RaisePropertyChanged("ListCount");
             }
         }
+
+        /// <summary>
+        /// 検索モードプロパティ
+        /// </summary>
+        public string[] SearchModeList
+        {
+            get
+            {
+                if (searchModeList == null)
+                {
+                    searchModeList = new string[] { "Text", "Tags" };
+                }
+
+                return searchModeList;
+            }
+        }
+
+        /// <summary>
+        /// 現在の検索モード
+        /// </summary>
+        public string SearchMode { get; set; }
 
 
         /// <summary>
@@ -217,30 +241,11 @@ namespace Climie3.viewmodel
         /// 検索処理
         /// </summary>
         /// <param name="pattern"></param>
-        public void Search(string inputText)
+        public void Search(string pattern)
         {
-            bool bSearchTags = false;
-            string pattern = string.Empty;
-
-            // コマンド識別
-            if (inputText.StartsWith("TAGS:", StringComparison.OrdinalIgnoreCase))
-            {
-                // タグ検索の場合
-                bSearchTags = true;
-                pattern = inputText.Substring(5);
-            }
-            else if (inputText.StartsWith("TEXT:", StringComparison.OrdinalIgnoreCase))
-            {
-                // テキスト検索の場合
-                pattern = inputText.Substring(5);
-            }
-            else
-            {
-                // 指定なしはテキスト検索
-                pattern = inputText;
-            }
-
-            if (bSearchTags == false)
+            string mode = SearchMode;
+            
+            if (mode == "Text")
             {
                 ListDsp = SearchByText(pattern);
             }
