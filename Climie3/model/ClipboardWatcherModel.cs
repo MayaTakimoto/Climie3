@@ -59,5 +59,15 @@ namespace Climie3.model
                 Thread.Sleep(1000);
             }
         }
+
+        /// <summary>
+        /// オブジェクト破棄
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected override void Dispose(bool disposing)
+        {
+            StopFlg = false;
+            base.Dispose(disposing);
+        }
     }
 }

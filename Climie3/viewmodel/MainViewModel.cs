@@ -1,4 +1,5 @@
-﻿//-----------------------------------------------------------------------
+﻿using Climie3.config;
+//-----------------------------------------------------------------------
 // <summary>メインウィンドウViewModel</summary>
 // <author>MayaTakimoto</author>
 // <date>$Date: 2014-01-31 00:00:00 +9:00 $</date>
@@ -8,13 +9,13 @@
 //-----------------------------------------------------------------------
 using Climie3.model;
 using Livet;
+using Livet.Commands;
+using Livet.Messaging;
 using ProtoBuf;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
@@ -36,7 +37,7 @@ namespace Climie3.viewmodel
 
         // 履歴件数
         private string listCount;
-        
+
         // 検索モード
         private string[] searchModeList;
 
@@ -48,6 +49,10 @@ namespace Climie3.viewmodel
 
         // 正規表現パターン生成オブジェクト
         private RegexManagerModel regMan;
+
+        // 
+        private ViewModelCommand _ShowPasswordWindowCommand;
+
 
         /// <summary>
         /// データ保持用リストプロパティ
@@ -96,7 +101,7 @@ namespace Climie3.viewmodel
             }
             set
             {
-                this.listCount = value; 
+                this.listCount = value;
                 RaisePropertyChanged("ListCount");
             }
         }
@@ -122,6 +127,21 @@ namespace Climie3.viewmodel
         /// </summary>
         public string SearchMode { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public ViewModelCommand ShowPasswordWindowCommand
+        {
+            get
+            {
+                if (_ShowPasswordWindowCommand == null)
+                {
+                    _ShowPasswordWindowCommand = new ViewModelCommand(ShowPasswordWindow);
+                }
+                return _ShowPasswordWindowCommand;
+            }
+        }
+         
 
         /// <summary>
         /// コンストラクタ
@@ -130,9 +150,9 @@ namespace Climie3.viewmodel
         {
             cWatch = new ClipboradWatcherModel();
 
-            // VM破棄時に同時に破棄されるように設定
             CompositeDisposable.Add(cWatch);
             CompositeDisposable.Add(regMan);
+            CompositeDisposable.Add(KeyInfo.Instance);
 
             // データ復元
             this.Load();
@@ -165,8 +185,8 @@ namespace Climie3.viewmodel
                 new Action(() =>
                 {
                     ListItemViewModel newItem = new ListItemViewModel();
-                    newItem.Text = cWatch.CbText;
-                    newItem.Tags.Add(cWatch.CbText);
+                    newItem.Text = cWatch.CbText;                           // クリップボード内テキスト
+                    newItem.Tags = DateTime.Now.ToString("yyyyMMddHHmmss"); // 現在日時
 
                     ListMain.Add(newItem);
                 })
@@ -218,7 +238,8 @@ namespace Climie3.viewmodel
         /// </summary>
         public void Save()
         {
-            DataSaveLoadModel.Save<ListItemViewModel>(ListMain, "");
+            DataSaveLoadModel dataWriter = new DataSaveLoadModel();
+            dataWriter.Save<ListItemViewModel>(ListMain, "data.dat");
         }
 
         /// <summary>
@@ -226,7 +247,8 @@ namespace Climie3.viewmodel
         /// </summary>
         public void Load()
         {
-            ListMain = DataSaveLoadModel.Load<ListItemViewModel>("");
+            DataSaveLoadModel dataReader = new DataSaveLoadModel();
+            ListMain = dataReader.Load<ListItemViewModel>("data.dat");
         }
 
         /// <summary>
@@ -243,15 +265,30 @@ namespace Climie3.viewmodel
         /// <param name="pattern"></param>
         public void Search(string pattern)
         {
-            string mode = SearchMode;
-            
-            if (mode == "Text")
+            Regex regex = null;
+
+            if (string.IsNullOrEmpty(pattern) || "/".Equals(pattern))
             {
-                ListDsp = SearchByText(pattern);
+                ListDsp = ListMain;
             }
             else
             {
-                ListDsp = SearchByTags(pattern);
+                regex = regMan.GetRegex(pattern);
+
+                if (regex != null)
+                {
+                    ListDsp = new ObservableCollection<ListItemViewModel>(ListMain.Where((item) =>
+                    {
+                        if ("Text".Equals(SearchMode))
+                        {
+                            return regex.IsMatch(item.Text);
+                        }
+                        else
+                        {
+                            return regex.IsMatch(item.Tags);
+                        }
+                    }));
+                }
             }
         }
 
@@ -264,6 +301,14 @@ namespace Climie3.viewmodel
             {
                 regMan.Dispose();
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void ShowPasswordWindow()
+        {
+            Messenger.Raise(new TransitionMessage(new PasswordViewModel(), "ShowPasswordWindow"));
         }
 
         /// <summary>
@@ -280,67 +325,30 @@ namespace Climie3.viewmodel
         }
 
         /// <summary>
-        /// テキスト検索
+        /// ViewModelの破棄
         /// </summary>
-        /// <param name="pattern"></param>
-        /// <returns></returns>
-        private ObservableCollection<ListItemViewModel> SearchByText(string pattern)
+        /// <param name="disposing"></param>
+        protected override void Dispose(bool disposing)
         {
-            ObservableCollection<ListItemViewModel> oc = null;
-            Regex regex = null;
+            // 変数初期化
+            listMain = null;
+            listDsp = null;
+            listCount = null;
+            
+            //this.ThreadStop();
+            //if (cWatch != null)
+            //{
+            //    cWatch.Dispose();
+            //}
 
-            if (string.IsNullOrEmpty(pattern) || "/".Equals(pattern))
-            {
-                oc = ListMain;
-            }
-            else
-            {
-                regex = regMan.GetRegex(pattern);
+            //if (regMan != null)
+            //{
+            //    regMan.Dispose();
+            //}
 
-                if (regex != null)
-                {
-                    oc = new ObservableCollection<ListItemViewModel>(ListMain.Where((item) =>
-                    {
-                        return regex.IsMatch(item.Text);
-                    }));
-                }
-            }
+            //KeyInfo.Instance.Dispose();
 
-            return oc;
-        }
-
-        /// <summary>
-        /// タグ検索
-        /// </summary>
-        /// <param name="pattern"></param>
-        /// <returns></returns>
-        private ObservableCollection<ListItemViewModel> SearchByTags(string pattern)
-        {
-            ObservableCollection<ListItemViewModel> oc = null;
-            Regex regex = null;
-
-            if (string.IsNullOrEmpty(pattern) || "/".Equals(pattern))
-            {
-                oc = ListMain;
-            }
-            else
-            {
-                regex = regMan.GetRegex(pattern);
-
-                oc = new ObservableCollection<ListItemViewModel>(ListMain.Where((item) =>
-                {
-                    if (item.Tags.Any(tag => regex.IsMatch(tag)))
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }));
-            }
-
-            return oc;
+            base.Dispose(disposing);
         }
     }
 }

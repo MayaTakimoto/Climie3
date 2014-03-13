@@ -1,6 +1,5 @@
 ﻿using Livet;
 using ProtoBuf;
-using System.Collections.Generic;
 
 namespace Climie3.viewmodel
 {
@@ -20,7 +19,7 @@ namespace Climie3.viewmodel
 
         // タグ
         [ProtoMember(3)]
-        private List<string> tags;
+        private string tags;
 
         // 選択状態フラグプロパティ
         public bool IsSelected
@@ -50,7 +49,7 @@ namespace Climie3.viewmodel
         }
 
         // タグプロパティ
-        public List<string> Tags
+        public string Tags
         {
             get
             {
@@ -63,11 +62,17 @@ namespace Climie3.viewmodel
         }
 
         /// <summary>
-        /// コンストラクタ
+        /// ViewModelの破棄
         /// </summary>
-        public ListItemViewModel()
+        /// <param name="disposing"></param>
+        protected override void Dispose(bool disposing)
         {
-            Tags = new List<string>();
+            // 変数初期化
+            isSelected = false;
+            text = null;
+            tags = null;
+
+            base.Dispose(disposing);
         }
     }
 }
